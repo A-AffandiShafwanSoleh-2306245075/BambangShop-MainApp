@@ -215,3 +215,66 @@ Saat saya melakukan subscribe:
     "name": "Rick Asli"
   }
 #### Reflection Publisher-3
+
+## 1. Variasi Observer Pattern yang digunakan
+
+Pada tutorial BambangShop yang saya kerjakan, variasi Observer Pattern yang digunakan adalah **Push Model**, di mana publisher secara langsung mengirimkan data ke subscriber.
+
+Hal ini terlihat dari implementasi pada `NotificationService::notify` dan `Subscriber::update`. Setiap kali terjadi event seperti create product, publish product, atau delete product, sistem akan langsung membuat payload `Notification` dan mengirimkannya ke seluruh subscriber menggunakan HTTP POST request.
+
+Dalam implementasi yang saya lakukan:
+- Service mengambil daftar subscriber dari `SubscriberRepository`
+- Kemudian melakukan iterasi terhadap semua subscriber
+- Untuk setiap subscriber, dipanggil method `update`
+- Method tersebut akan mengirim request ke URL subscriber (contohnya `http://localhost:8001/receive`)
+
+Dengan demikian, subscriber tidak mengambil data sendiri, melainkan menerima data yang dikirim langsung oleh publisher. Oleh karena itu, pendekatan yang digunakan jelas merupakan Push Model.
+
+---
+
+## 2. Jika menggunakan Pull Model
+
+Jika pada tutorial ini digunakan Pull Model, maka alurnya akan berbeda karena subscriber harus mengambil data sendiri dari publisher.
+
+Dalam Pull Model:
+- Publisher hanya menyediakan data (misalnya endpoint untuk mengambil notifikasi)
+- Subscriber harus melakukan request secara berkala (polling) untuk mengetahui apakah ada update terbaru
+
+Pendekatan ini memiliki beberapa kelebihan:
+- Subscriber lebih fleksibel karena bisa menentukan kapan ingin mengambil data
+- Publisher tidak perlu mengirim request ke banyak subscriber
+- Tidak ada masalah jika subscriber sedang offline
+
+Namun, untuk kasus pada tutorial ini, Pull Model memiliki beberapa kekurangan:
+- Tidak real-time karena subscriber harus melakukan polling
+- Bisa terjadi keterlambatan dalam menerima notifikasi
+- Menambah kompleksitas di sisi subscriber
+- Jika polling terlalu sering, justru dapat membebani server
+
+Dibandingkan dengan itu, Push Model yang digunakan dalam tutorial ini lebih sesuai karena notifikasi langsung dikirim saat event terjadi, sehingga lebih sederhana dan lebih mendukung kebutuhan real-time.
+
+---
+
+## 3. Dampak jika tidak menggunakan multi-threading
+
+Dalam tutorial ini, pengiriman notifikasi dilakukan menggunakan multi-threading dengan `thread::spawn`. Hal ini memungkinkan setiap subscriber diproses secara paralel.
+
+Jika multi-threading tidak digunakan, maka proses pengiriman notifikasi akan berjalan secara berurutan (synchronous). Dampaknya adalah:
+
+- Setiap request HTTP harus menunggu request sebelumnya selesai
+- Jika jumlah subscriber banyak, waktu pengiriman notifikasi akan menjadi lama
+- Response dari API (misalnya saat publish product) akan menjadi lambat
+- Jika ada subscriber yang lambat atau tidak merespon, seluruh proses akan ikut terhambat
+
+Sebagai ilustrasi:
+- Tanpa thread → subscriber diproses satu per satu
+- Dengan thread → semua subscriber diproses secara bersamaan
+
+Dalam implementasi yang saya lakukan, penggunaan `thread::spawn` membuat proses notifikasi menjadi:
+- Lebih cepat karena berjalan paralel
+- Tidak blocking terhadap request utama
+- Lebih scalable jika jumlah subscriber bertambah
+
+---
+
+Secara keseluruhan, penggunaan Push Model dan multi-threading pada tutorial ini membuat sistem notifikasi menjadi lebih efisien, real-time, dan sesuai dengan kebutuhan aplikasi yang mengharapkan pengiriman notifikasi secara langsung ke subscriber.
