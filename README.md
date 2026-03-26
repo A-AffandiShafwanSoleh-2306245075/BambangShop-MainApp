@@ -77,7 +77,58 @@ This is the place for you to write reflections:
 ### Mandatory (Publisher) Reflections
 
 #### Reflection Publisher-1
+# Reflection Publisher-1
 
+## 1. Apakah masih perlu interface (trait) untuk Subscriber?
+
+Pada konsep Observer pattern secara umum (seperti di Head First Design Patterns), Subscriber biasanya didefinisikan sebagai interface agar mendukung banyak jenis subscriber yang berbeda.
+
+Namun, pada kasus BambangShop yang saya implementasikan di tutorial ini, penggunaan trait (interface di Rust) tidak diperlukan. Hal ini karena:
+
+- Semua subscriber memiliki struktur yang sama (hanya url dan name).
+- Tidak ada variasi perilaku antar subscriber.
+- Proses notifikasi dilakukan dengan cara yang sama (HTTP POST ke URL).
+
+Oleh karena itu, penggunaan satu struct `Subscriber` saja sudah cukup untuk memenuhi kebutuhan sistem saat ini. Penggunaan trait baru akan diperlukan jika di masa depan terdapat berbagai jenis subscriber dengan perilaku berbeda.
+
+---
+
+## 2. Apakah Vec cukup atau perlu DashMap?
+
+Pada kasus ini, `url` pada Subscriber bersifat unik. Jika kita menggunakan `Vec`, maka:
+
+- Kita harus melakukan pencarian manual (linear search) untuk mengecek duplikasi.
+- Operasi insert, delete, dan lookup menjadi kurang efisien (O(n)).
+
+Sedangkan dengan `DashMap`:
+
+- Data disimpan dalam bentuk key-value (url sebagai key).
+- Tidak memungkinkan duplikasi key.
+- Operasi lebih efisien (mendekati O(1)).
+- Lebih aman untuk akses bersamaan (thread-safe).
+
+Karena itu, penggunaan `DashMap` lebih tepat dibandingkan `Vec` untuk kasus ini, terutama karena kita membutuhkan efisiensi dan keunikan data.
+
+---
+
+## 3. Apakah DashMap masih diperlukan atau cukup Singleton?
+
+Dalam tutorial ini, kita menggunakan `lazy_static` untuk membuat `SUBSCRIBERS` sebagai singleton (hanya satu instance global).
+
+Namun, Singleton hanya memastikan bahwa data hanya ada satu instance, **tidak menjamin thread safety**.
+
+Karena aplikasi ini menggunakan multi-threading (misalnya saat mengirim notifikasi ke banyak subscriber), maka:
+
+- Akses ke data bisa terjadi secara bersamaan.
+- Dibutuhkan struktur data yang aman terhadap concurrency.
+
+`DashMap` menyediakan thread-safe HashMap tanpa perlu manual locking seperti `Mutex`.
+
+Jadi:
+- Singleton → memastikan satu instance
+- DashMap → memastikan thread-safe access
+
+Kesimpulannya, kita tetap membutuhkan `DashMap` meskipun sudah menggunakan konsep Singleton, karena keduanya memiliki peran yang berbeda.
 #### Reflection Publisher-2
 
 #### Reflection Publisher-3
