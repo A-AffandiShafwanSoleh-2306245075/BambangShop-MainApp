@@ -130,5 +130,88 @@ Jadi:
 
 Kesimpulannya, kita tetap membutuhkan `DashMap` meskipun sudah menggunakan konsep Singleton, karena keduanya memiliki peran yang berbeda.
 #### Reflection Publisher-2
+## 1. Mengapa perlu memisahkan Service dan Repository dari Model?
 
+Pada konsep MVC klasik, Model biasanya mencakup data sekaligus business logic. Namun, pada implementasi di tutorial ini, Model hanya digunakan sebagai representasi data, sedangkan logic dipisahkan ke dalam Service dan Repository.
+
+Dalam tutorial yang saya kerjakan:
+- Model (`Subscriber`, `Notification`, `Product`) hanya berisi struktur data.
+- Repository (`SubscriberRepository`) bertugas untuk mengelola penyimpanan data menggunakan `DashMap`.
+- Service (`NotificationService`) bertugas mengatur alur business logic seperti subscribe dan unsubscribe.
+
+Pemisahan ini dilakukan karena mengikuti prinsip desain:
+- **Separation of Concerns** → setiap layer memiliki tanggung jawab yang jelas.
+- **Single Responsibility Principle (SRP)** → setiap komponen hanya memiliki satu tujuan utama.
+
+Sebagai contoh dari implementasi saya:
+- Saat melakukan subscribe, controller memanggil `NotificationService::subscribe`.
+- Kemudian service akan memanggil `SubscriberRepository::add` untuk menyimpan data.
+- Model hanya digunakan sebagai data yang dikirim dan diterima.
+
+Keuntungan dari pemisahan ini:
+- Kode lebih terstruktur dan mudah dibaca.
+- Mudah dikembangkan jika nanti ingin menambah fitur baru (misalnya validasi tambahan).
+- Mudah mengganti implementasi penyimpanan (misalnya dari `DashMap` ke database).
+- Mempermudah debugging karena setiap layer memiliki peran yang jelas.
+
+---
+
+## 2. Apa yang terjadi jika hanya menggunakan Model?
+
+Jika hanya menggunakan Model tanpa memisahkan Service dan Repository, maka seluruh logic akan berada di dalam Model. Hal ini akan menyebabkan beberapa masalah:
+
+### a. Kompleksitas meningkat
+Model akan menangani:
+- Struktur data
+- Penyimpanan data
+- Business logic
+- Bahkan kemungkinan komunikasi antar komponen
+
+Sebagai contoh:
+- `Subscriber` harus tahu cara menyimpan dirinya sendiri ke dalam struktur data global.
+- `Product` harus langsung mengatur subscriber dan notifikasi.
+- `Notification` bisa ikut terlibat dalam logic pengiriman.
+
+Akibatnya, setiap Model menjadi sangat kompleks.
+
+### b. Coupling tinggi
+Setiap Model akan saling bergantung satu sama lain:
+- Product bergantung ke Subscriber
+- Subscriber bergantung ke Notification
+- Notification bergantung ke Product
+
+Hal ini membuat perubahan kecil bisa berdampak ke banyak bagian.
+
+### c. Sulit di-maintain
+- Kode menjadi panjang dan sulit dibaca.
+- Sulit untuk menambahkan fitur baru tanpa merusak logic lama.
+- Testing menjadi lebih sulit karena semua logic bercampur.
+
+### d. Tidak sesuai dengan implementasi tutorial
+Dalam tutorial ini, kita sudah menggunakan:
+- Repository untuk akses data (`DashMap`)
+- Service untuk business logic
+
+Jika semua dipindahkan ke Model, maka struktur yang sudah dibuat menjadi tidak konsisten dan tidak mengikuti design pattern yang diharapkan.
+
+---
+
+## 3. Pengalaman menggunakan Postman
+
+Dalam tutorial ini, saya menggunakan Postman untuk menguji endpoint yang telah dibuat
+
+Postman sangat membantu karena:
+- Saya tidak perlu membuat frontend untuk mencoba API.
+- Bisa langsung mengirim request dan melihat response dari server.
+- Mempermudah pengecekan apakah logic di Service dan Repository sudah berjalan dengan benar.
+
+### Contoh penggunaan di tutorial:
+Saat saya melakukan subscribe:
+- Saya mengirim request ke endpoint `/notification/subscribe/APPLIANCES`
+- Dengan body JSON:
+  ```json
+  {
+    "url": "http://localhost:8001/receive",
+    "name": "Rick Asli"
+  }
 #### Reflection Publisher-3
