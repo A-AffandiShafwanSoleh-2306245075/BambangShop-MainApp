@@ -234,7 +234,7 @@ Dengan demikian, subscriber tidak mengambil data sendiri, melainkan menerima dat
 
 ## 2. Jika menggunakan Pull Model
 
-Jika pada tutorial ini digunakan Pull Model, maka alurnya akan berbeda karena subscriber harus mengambil data sendiri dari publisher.
+Jika pada tutorial ini digunakan Pull Model, maka alurnya akan berbeda karena subscriber harus mengambil data sendiri yang berasal dari publisher.
 
 Dalam Pull Model:
 - Publisher hanya menyediakan data (misalnya endpoint untuk mengambil notifikasi)
