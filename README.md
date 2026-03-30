@@ -237,7 +237,7 @@ Dengan demikian, subscriber tidak mengambil data sendiri, melainkan menerima dat
 Jika pada tutorial ini digunakan Pull Model, maka alurnya akan berbeda karena subscriber harus mengambil data sendiri yang berasal dari publisher.
 
 Dalam Pull Model:
-- Publisher hanya menyediakan data (misalnya endpoint untuk mengambil notifikasi)
+- Publisher hanya menyediakan data (misal endpoint untuk mengambil notifikasi)
 - Subscriber harus melakukan request secara berkala (polling) untuk mengetahui apakah ada update terbaru
 
 Pendekatan ini memiliki beberapa kelebihan:
